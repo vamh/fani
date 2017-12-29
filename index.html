@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>FANI</title>
+</head>
+<body>
+<canvas width="700" height="700" id="canvas"></canvas>
+<input type="button" value="EMPURRAR" onclick="push();">
+<span id="piada_span">0 piadas (+0 rph/s)</span>
+<input type="button" value="FAZER PIADA (10 rph)" onclick="buy_piada();" id="buy_piada_btn">
+<span id="slave_span">0 escravos (+0 rph/s)</span>
+<input type="button" value="COMPRAR ESCRAVO (10 rph)" onclick="buy_slave();" id="buy_slave_btn">
+<script>
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+var fani, center;
+var a = 0;
+var rpm = localStorage.getItem("rpm") | 0;
+var t = Date.now();
+var piadas = localStorage.getItem("piadas") | 0;
+var slaves = localStorage.getItem("slaves") | 0;
+
+update_all();
+
+function draw() {
+	var nt = Date.now();
+	var dt = (nt - t)/1000;
+	t = nt;
+	
+	var drpm = slaves * 5 + piadas * 0.5;
+	rpm += dt * drpm;
+	localStorage.setItem("rpm", rpm);
+	
+	a += dt * rpm * Math.PI * 2 / 3600;
+	
+	canvas.width = canvas.width;
+	
+	ctx.save();
+	ctx.translate(350, 353);
+	ctx.rotate(-a);
+	ctx.drawImage(fani, -350, -353);
+	ctx.restore();
+	ctx.drawImage(center, 0, 0);
+	ctx.font = "40px Georgia";
+	ctx.textAlign = "center";
+	ctx.fillStyle = "white";
+	
+	var displayRpm = Math.floor(rpm);
+	ctx.fillText(displayRpm + " rph", 350, 600);
+	window.requestAnimationFrame(draw);
+}
+
+function update_all() {
+	var price = (slaves+1) * 100;
+	buy_slave_btn.value = "COMPRAR ESCRAVO (" + price + " rph)";
+	var price = (piadas+1) * 10;
+	buy_piada_btn.value = "FAZER PIADA (" + price + " rph)";
+	
+	var drpm = slaves * 5;
+	slave_span.innerHTML = slaves + " escravos (+" + (Math.round(drpm*10)/10) + " rph/s)";
+	var drpm = piadas * 0.5;
+	piada_span.innerHTML = piadas + " piadas (+" + (Math.round(drpm*10)/10) + " rph/s)";
+}
+
+function push() {
+	rpm += 1;
+}
+
+function buy_slave() {
+	var price = (slaves+1) * 100;
+	
+	if(rpm >= price) {
+		rpm -= price;
+		slaves += 1;
+		localStorage.setItem("slaves", slaves);
+		
+		update_all();
+	}
+}
+
+function buy_piada() {
+	var price = (piadas+1) * 10;
+	
+	if(rpm >= price) {
+		rpm -= price;
+		piadas += 1;
+		localStorage.setItem("piadas", piadas);
+		
+		update_all();
+	}
+}
+
+center = new Image();
+center.src = "center.png";
+center.onload = function() {
+	fani = new Image();
+	fani.src = "fani.png";
+	fani.onload = draw;
+}
+</script>
+</body>
+</html>
