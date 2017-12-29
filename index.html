@@ -13,12 +13,26 @@
 <script>
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
-var fani, center;
+var fani, center, upgrade;
 var a = 0;
 var rpm = localStorage.getItem("rpm") | 0;
 var t = Date.now();
 var piadas = localStorage.getItem("piadas") | 0;
 var slaves = localStorage.getItem("slaves") | 0;
+var particles = [];
+
+function Particle(drawFunc) {
+	this.x = 350;
+	this.y = 353;
+	this.vx = (Math.random() - 0.5) * 10;
+	this.vy = -Math.random() * 10;
+	
+	this.draw = drawFunc.bind(this);
+}
+
+function upgradeParticle() {
+	ctx.drawImage(upgrade, this.x-90/2, this.y-78/2);
+}
 
 update_all();
 
@@ -41,12 +55,26 @@ function draw() {
 	ctx.drawImage(fani, -350, -353);
 	ctx.restore();
 	ctx.drawImage(center, 0, 0);
+	
+	for(var i = 0; i < particles.length; ++i) {
+		particles[i].draw();
+		
+		particles[i].x += particles[i].vx;
+		particles[i].y += particles[i].vy;
+		
+		particles[i].vy += 9.8 * dt;
+		
+		if(particles[i].y > 900)
+			particles.splice(i--, 1);
+	}
+	
 	ctx.font = "40px Georgia";
 	ctx.textAlign = "center";
 	ctx.fillStyle = "white";
 	
 	var displayRpm = Math.floor(rpm);
 	ctx.fillText(displayRpm + " rph", 350, 600);
+	
 	window.requestAnimationFrame(draw);
 }
 
@@ -74,6 +102,8 @@ function buy_slave() {
 		slaves += 1;
 		localStorage.setItem("slaves", slaves);
 		
+		particles.push(new Particle(upgradeParticle));
+		
 		update_all();
 	}
 }
@@ -86,10 +116,14 @@ function buy_piada() {
 		piadas += 1;
 		localStorage.setItem("piadas", piadas);
 		
+		particles.push(new Particle(upgradeParticle));
+		
 		update_all();
 	}
 }
 
+upgrade = new Image();
+upgrade.src = "upgrade.jpg";
 center = new Image();
 center.src = "center.png";
 center.onload = function() {
