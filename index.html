@@ -4,12 +4,22 @@
 <title>FANI</title>
 </head>
 <body>
-<canvas width="700" height="700" id="canvas"></canvas>
-<input type="button" value="EMPURRAR" onclick="push();">
-<span id="piada_span">0 piadas (+0 rph/s)</span>
-<input type="button" value="FAZER PIADA (10 rph)" onclick="buy_piada();" id="buy_piada_btn">
-<span id="slave_span">0 escravos (+0 rph/s)</span>
-<input type="button" value="COMPRAR ESCRAVO (10 rph)" onclick="buy_slave();" id="buy_slave_btn">
+<canvas width="700" height="700" id="canvas" style="float:left"></canvas>
+<div style="float:left">
+<input type="button" value="EMPURRAR" onclick="push();"><br>
+<span id="piada_span"></span>
+<input type="button" id="piada_btn"><br>
+<span id="slave_span"></span>
+<input type="button" id="slave_btn"><br>
+<span id="harem_span"></span>
+<input type="button" id="harem_btn"><br>
+<span id="nudes_span"></span>
+<input type="button" id="nudes_btn"><br>
+<span id="rape_span"></span>
+<input type="button" id="rape_btn"><br>
+<span id="xd_span"></span>
+<input type="button" id="xd_btn"><br>
+</div>
 <script>
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
@@ -17,8 +27,43 @@ var fani, center, upgrade;
 var a = 0;
 var rpm = localStorage.getItem("rpm") | 0;
 var t = Date.now();
-var piadas = localStorage.getItem("piadas") | 0;
-var slaves = localStorage.getItem("slaves") | 0;
+var purchases = {};
+
+register("piadas",             function(a){return (a+1)*10  },              0.5, piada_btn, piada_span, "FAZER PIADA", "piadas");
+register("slaves",             function(a){return (a+1)*100 },              5.0, slave_btn, slave_span, "COMPRAR ESCRAVO", "escravos");
+register("harem" ,          function(a){return (a+1)*1000000},          50000.0, harem_btn, harem_span, "SEDUZIR VAMH", "membros do harem");
+register("nudes" ,       function(a){return (a+1)*1000000000},       50000000.0, nudes_btn, nudes_span, "POSTAR NUDE", "nudes postadas");
+register("rape"  ,    function(a){return (a+1)*1000000000000},    50000000000.0,  rape_btn,  rape_span, "BIOLAR ALGUÉM", "biolações");
+register("XD"    , function(a){return (a+1)*1000000000000000}, 50000000000000.0,    xd_btn,    xd_span, "XD", "XDs");
+update_all();
+
+function register(name, cost, earn, btn, span, buy_str, display) {
+	btn.onclick = function(){purchase(name)};
+	purchases[name] = {
+		amount: localStorage.getItem(name) | 0,
+		cost: cost,
+		earn: earn,
+		btn: btn,
+		span: span,
+		buy_str: buy_str,
+		display: display
+	}
+}
+
+function purchase(name) {
+	var price = purchases[name].cost(purchases[name].amount);
+	
+	if(rpm >= price) {
+		rpm -= price;
+		purchases[name].amount += 1;
+		localStorage.setItem(name, purchases[name].amount);
+		
+		particles.push(new Particle(upgradeParticle));
+		
+		update_all();
+	}
+}
+
 var particles = [];
 
 function Particle(drawFunc) {
@@ -41,7 +86,13 @@ function draw() {
 	var dt = (nt - t)/1000;
 	t = nt;
 	
-	var drpm = slaves * 5 + piadas * 0.5;
+	var drpm = 0;
+	
+	for(var k in purchases) {
+		var p = purchases[k];
+		drpm += p.amount * p.earn;
+	}
+	
 	rpm += dt * drpm;
 	localStorage.setItem("rpm", rpm);
 	
@@ -79,47 +130,20 @@ function draw() {
 }
 
 function update_all() {
-	var price = (slaves+1) * 100;
-	buy_slave_btn.value = "COMPRAR ESCRAVO (" + price + " rph)";
-	var price = (piadas+1) * 10;
-	buy_piada_btn.value = "FAZER PIADA (" + price + " rph)";
-	
-	var drpm = slaves * 5;
-	slave_span.innerHTML = slaves + " escravos (+" + (Math.round(drpm*10)/10) + " rph/s)";
-	var drpm = piadas * 0.5;
-	piada_span.innerHTML = piadas + " piadas (+" + (Math.round(drpm*10)/10) + " rph/s)";
+	for(var k in purchases) {
+		var p = purchases[k];
+		
+		var price = p.cost(p.amount);
+		
+		p.btn.value = p.buy_str + " (" + price + " rph)";
+		
+		var drpm = Math.round(p.earn * p.amount*10)/10;
+		p.span.innerHTML = p.amount + " " + p.display + " (+" + drpm + " rph/s)";
+	}
 }
 
 function push() {
 	rpm += 1;
-}
-
-function buy_slave() {
-	var price = (slaves+1) * 100;
-	
-	if(rpm >= price) {
-		rpm -= price;
-		slaves += 1;
-		localStorage.setItem("slaves", slaves);
-		
-		particles.push(new Particle(upgradeParticle));
-		
-		update_all();
-	}
-}
-
-function buy_piada() {
-	var price = (piadas+1) * 10;
-	
-	if(rpm >= price) {
-		rpm -= price;
-		piadas += 1;
-		localStorage.setItem("piadas", piadas);
-		
-		particles.push(new Particle(upgradeParticle));
-		
-		update_all();
-	}
 }
 
 upgrade = new Image();
