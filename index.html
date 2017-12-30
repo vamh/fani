@@ -25,7 +25,7 @@ var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 var fani, center, upgrade;
 var a = 0;
-var rpm = localStorage.getItem("rpm") | 0;
+var rpm = parseFloat(localStorage.getItem("rpm")) | 0;
 var t = Date.now();
 var purchases = {};
 
@@ -101,7 +101,7 @@ function draw() {
 	}
 	
 	rpm += dt * drpm;
-	localStorage.setItem("rpm", rpm);
+	localStorage.setItem("rpm", "" + rpm);
 	
 	a += dt * rpm * Math.PI * 2 / 3600;
 	
