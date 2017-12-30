@@ -64,6 +64,13 @@ function purchase(name) {
 	}
 }
 
+function number(n) {
+	var nStr = "" + n;
+	var remainder = nStr.length % 3;
+    return (nStr.substr(0, remainder) + nStr.substr(remainder).replace(/(\d{3})/g, ' $1')).trim();
+
+}
+
 var particles = [];
 
 function Particle(drawFunc) {
@@ -121,9 +128,9 @@ function draw() {
 	
 	ctx.font = "40px Georgia";
 	ctx.textAlign = "center";
-	ctx.fillStyle = "white";
+	ctx.fillStyle = "#c00";
 	
-	var displayRpm = Math.floor(rpm);
+	var displayRpm = number(Math.floor(rpm));
 	ctx.fillText(displayRpm + " rph", 350, 600);
 	
 	window.requestAnimationFrame(draw);
@@ -135,10 +142,10 @@ function update_all() {
 		
 		var price = p.cost(p.amount);
 		
-		p.btn.value = p.buy_str + " (" + price + " rph)";
+		p.btn.value = p.buy_str + " (" + number(price) + " rph)";
 		
 		var drpm = Math.round(p.earn * p.amount*10)/10;
-		p.span.innerHTML = p.amount + " " + p.display + " (+" + drpm + " rph/s)";
+		p.span.innerHTML = p.amount + " " + p.display + " (+" + number(drpm) + " rph/s)";
 	}
 }
 
