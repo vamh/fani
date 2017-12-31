@@ -26,6 +26,8 @@ var ctx = canvas.getContext("2d");
 var fani, center, upgrade;
 var a = 0;
 var rpm = parseFloat(localStorage.getItem("rpm"));
+if(isNaN(rpm))
+	rpm = 0;
 var t = Date.now();
 var purchases = {};
 
